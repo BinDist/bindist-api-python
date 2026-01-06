@@ -1,6 +1,8 @@
 """Customer API client for end-users."""
 
 import hashlib
+from typing import Any
+
 from .base import BaseClient, ApiResponse
 
 
@@ -31,16 +33,16 @@ class CustomerClient(BaseClient):
         Returns:
             ApiResponse with applications list
         """
-        params = {
-            'page': page,
-            'pageSize': page_size,
+        params: dict[str, Any] = {
+            "page": page,
+            "pageSize": page_size,
         }
         if search:
-            params['search'] = search
+            params["search"] = search
         if tags:
-            params['tags'] = ','.join(tags)
+            params["tags"] = ",".join(tags)
 
-        return self.get('/applications', params=params)
+        return self.get("/applications", params=params)
 
     def get_application(self, application_id: str) -> ApiResponse:
         """
@@ -52,7 +54,7 @@ class CustomerClient(BaseClient):
         Returns:
             ApiResponse with application details
         """
-        return self.get(f'/applications/{application_id}')
+        return self.get(f"/applications/{application_id}")
 
     def list_versions(
         self,
@@ -73,14 +75,14 @@ class CustomerClient(BaseClient):
         """
         params = {}
         if changelog:
-            params['changelog'] = changelog
+            params["changelog"] = changelog
 
         headers = {}
         if test_channel:
-            headers['X-Channel'] = 'Test'
+            headers["X-Channel"] = "Test"
 
         return self.get(
-            f'/applications/{application_id}/versions',
+            f"/applications/{application_id}/versions",
             params=params if params else None,
             headers=headers if headers else None,
         )
@@ -100,7 +102,7 @@ class CustomerClient(BaseClient):
         Returns:
             ApiResponse with files list
         """
-        return self.get(f'/applications/{application_id}/versions/{version}/files')
+        return self.get(f"/applications/{application_id}/versions/{version}/files")
 
     def get_download_url(
         self,
@@ -122,18 +124,18 @@ class CustomerClient(BaseClient):
             ApiResponse with download URL and file metadata
         """
         params = {
-            'applicationId': application_id,
-            'version': version,
+            "applicationId": application_id,
+            "version": version,
         }
         if file_id:
-            params['fileId'] = file_id
+            params["fileId"] = file_id
 
         headers = {}
         if test_channel:
-            headers['X-Channel'] = 'Test'
+            headers["X-Channel"] = "Test"
 
         return self.get(
-            '/downloads/url',
+            "/downloads/url",
             params=params,
             headers=headers if headers else None,
         )
@@ -145,7 +147,7 @@ class CustomerClient(BaseClient):
         file_id: str | None = None,
         test_channel: bool = False,
         verify_checksum: bool = True,
-    ) -> tuple[bytes, dict]:
+    ) -> tuple[bytes, dict[str, Any]]:
         """
         Download a file and optionally verify checksum.
 
@@ -170,16 +172,17 @@ class CustomerClient(BaseClient):
             test_channel=test_channel,
         )
 
-        if not url_response.success:
+        if not url_response.success or url_response.data is None:
             raise Exception(f"Failed to get download URL: {url_response.error}")
 
-        download_url = url_response.data['url']
-        expected_checksum = url_response.data.get('checksum')
-        metadata = {
-            'fileName': url_response.data.get('fileName'),
-            'fileSize': url_response.data.get('fileSize'),
-            'checksum': expected_checksum,
-            'expiresAt': url_response.data.get('expiresAt'),
+        data = url_response.data
+        download_url: str = data["url"]
+        expected_checksum: str | None = data.get("checksum")
+        metadata: dict[str, Any] = {
+            "fileName": data.get("fileName"),
+            "fileSize": data.get("fileSize"),
+            "checksum": expected_checksum,
+            "expiresAt": data.get("expiresAt"),
         }
 
         content = self.download(download_url)
@@ -214,14 +217,14 @@ class CustomerClient(BaseClient):
             ApiResponse with share link details
         """
         payload = {
-            'applicationId': application_id,
-            'version': version,
-            'expiresMinutes': expires_minutes,
+            "applicationId": application_id,
+            "version": version,
+            "expiresMinutes": expires_minutes,
         }
         if file_id:
-            payload['fileId'] = file_id
+            payload["fileId"] = file_id
 
-        return self.post('/downloads/share', json=payload)
+        return self.post("/downloads/share", json=payload)
 
     def get_stats(self, application_id: str) -> ApiResponse:
         """
@@ -233,4 +236,4 @@ class CustomerClient(BaseClient):
         Returns:
             ApiResponse with statistics
         """
-        return self.get(f'/applications/{application_id}/stats')
+        return self.get(f"/applications/{application_id}/stats")

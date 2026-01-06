@@ -1,6 +1,6 @@
 # BinDist Python API Client
 
-Python client library for the Application Distribution System API.
+Python client library for the BinDist API.
 
 ## Requirements
 

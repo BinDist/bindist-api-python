@@ -1,5 +1,7 @@
 """Base HTTP client with authentication."""
 
+from typing import Any
+
 import requests
 from dataclasses import dataclass
 
@@ -10,25 +12,25 @@ class ApiResponse:
 
     success: bool
     status_code: int
-    data: dict | None
-    error: dict | None
-    meta: dict | None
-    raw: dict
+    data: dict[str, Any] | None
+    error: dict[str, Any] | None
+    meta: dict[str, Any] | None
+    raw: dict[str, Any]
 
     @classmethod
-    def from_response(cls, response: requests.Response) -> 'ApiResponse':
+    def from_response(cls, response: requests.Response) -> "ApiResponse":
         """Create ApiResponse from requests.Response."""
         try:
             json_data = response.json()
         except requests.exceptions.JSONDecodeError:
-            json_data = {'success': False, 'error': {'message': response.text}}
+            json_data = {"success": False, "error": {"message": response.text}}
 
         return cls(
-            success=json_data.get('success', False),
+            success=json_data.get("success", False),
             status_code=response.status_code,
-            data=json_data.get('data'),
-            error=json_data.get('error'),
-            meta=json_data.get('meta'),
+            data=json_data.get("data"),
+            error=json_data.get("error"),
+            meta=json_data.get("meta"),
             raw=json_data,
         )
 
@@ -44,13 +46,15 @@ class BaseClient:
             base_url: API base URL (e.g., https://api.bindist.eu)
             api_key: API key in format {tenant_id}.{secret}
         """
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.session = requests.Session()
-        self.session.headers.update({
-            'Authorization': f'Bearer {api_key}',
-            'Content-Type': 'application/json',
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+        )
 
     def _url(self, path: str) -> str:
         """Build full URL from path."""
@@ -59,8 +63,8 @@ class BaseClient:
     def get(
         self,
         path: str,
-        params: dict | None = None,
-        headers: dict | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> ApiResponse:
         """Make GET request."""
         response = self.session.get(
@@ -73,8 +77,8 @@ class BaseClient:
     def post(
         self,
         path: str,
-        json: dict | None = None,
-        headers: dict | None = None,
+        json: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> ApiResponse:
         """Make POST request."""
         response = self.session.post(
@@ -87,8 +91,8 @@ class BaseClient:
     def patch(
         self,
         path: str,
-        json: dict | None = None,
-        headers: dict | None = None,
+        json: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> ApiResponse:
         """Make PATCH request."""
         response = self.session.patch(
@@ -101,7 +105,7 @@ class BaseClient:
     def delete(
         self,
         path: str,
-        headers: dict | None = None,
+        headers: dict[str, str] | None = None,
     ) -> ApiResponse:
         """Make DELETE request."""
         response = self.session.delete(
@@ -114,7 +118,7 @@ class BaseClient:
         self,
         url: str,
         data: bytes,
-        content_type: str = 'application/octet-stream',
+        content_type: str = "application/octet-stream",
     ) -> requests.Response:
         """
         Upload binary data to a URL (for S3 pre-signed uploads).
@@ -124,7 +128,7 @@ class BaseClient:
         return requests.put(
             url,
             data=data,
-            headers={'Content-Type': content_type},
+            headers={"Content-Type": content_type},
         )
 
     def download(self, url: str) -> bytes:

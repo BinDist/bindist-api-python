@@ -2,6 +2,8 @@
 
 import base64
 import hashlib
+from typing import Any
+
 from .base import BaseClient, ApiResponse
 
 
@@ -16,8 +18,8 @@ class AdminClient(BaseClient):
     def create_customer(
         self,
         name: str,
-        tier: str = 'Basic',
-        parent_customer_id: str = 'admin',
+        tier: str = "Basic",
+        parent_customer_id: str = "admin",
         notes: str | None = None,
     ) -> ApiResponse:
         """
@@ -33,14 +35,14 @@ class AdminClient(BaseClient):
             ApiResponse with customer details and API key
         """
         payload = {
-            'name': name,
-            'tier': tier,
+            "name": name,
+            "tier": tier,
         }
         if notes:
-            payload['notes'] = notes
+            payload["notes"] = notes
 
         return self.post(
-            f'/management/customers/{parent_customer_id}/apikeys',
+            f"/management/customers/{parent_customer_id}/apikeys",
             json=payload,
         )
 
@@ -66,16 +68,16 @@ class AdminClient(BaseClient):
             ApiResponse with application details
         """
         payload = {
-            'applicationId': application_id,
-            'name': name,
-            'customerIds': customer_ids,
+            "applicationId": application_id,
+            "name": name,
+            "customerIds": customer_ids,
         }
         if description:
-            payload['description'] = description
+            payload["description"] = description
         if tags:
-            payload['tags'] = tags
+            payload["tags"] = tags
 
-        return self.post('/management/applications', json=payload)
+        return self.post("/management/applications", json=payload)
 
     def upload_small_file(
         self,
@@ -99,16 +101,16 @@ class AdminClient(BaseClient):
             ApiResponse with version details
         """
         payload = {
-            'applicationId': application_id,
-            'version': version,
-            'fileName': file_name,
-            'fileContent': base64.b64encode(file_content).decode('utf-8'),
-            'fileType': 'MAIN',
+            "applicationId": application_id,
+            "version": version,
+            "fileName": file_name,
+            "fileContent": base64.b64encode(file_content).decode("utf-8"),
+            "fileType": "MAIN",
         }
         if release_notes:
-            payload['releaseNotes'] = release_notes
+            payload["releaseNotes"] = release_notes
 
-        return self.post('/management/upload', json=payload)
+        return self.post("/management/upload", json=payload)
 
     def get_large_upload_url(
         self,
@@ -116,7 +118,7 @@ class AdminClient(BaseClient):
         version: str,
         file_name: str,
         file_size: int,
-        content_type: str = 'application/octet-stream',
+        content_type: str = "application/octet-stream",
     ) -> ApiResponse:
         """
         Get a pre-signed URL for large file upload.
@@ -132,14 +134,14 @@ class AdminClient(BaseClient):
             ApiResponse with uploadId and uploadUrl
         """
         payload = {
-            'applicationId': application_id,
-            'version': version,
-            'fileName': file_name,
-            'fileSize': file_size,
-            'contentType': content_type,
+            "applicationId": application_id,
+            "version": version,
+            "fileName": file_name,
+            "fileSize": file_size,
+            "contentType": content_type,
         }
 
-        return self.post('/management/upload/large-url', json=payload)
+        return self.post("/management/upload/large-url", json=payload)
 
     def complete_large_upload(
         self,
@@ -167,17 +169,17 @@ class AdminClient(BaseClient):
             ApiResponse with version details
         """
         payload = {
-            'uploadId': upload_id,
-            'applicationId': application_id,
-            'version': version,
-            'fileName': file_name,
-            'fileSize': file_size,
-            'checksum': checksum,
+            "uploadId": upload_id,
+            "applicationId": application_id,
+            "version": version,
+            "fileName": file_name,
+            "fileSize": file_size,
+            "checksum": checksum,
         }
         if release_notes:
-            payload['releaseNotes'] = release_notes
+            payload["releaseNotes"] = release_notes
 
-        return self.post('/management/upload/large-complete', json=payload)
+        return self.post("/management/upload/large-complete", json=payload)
 
     def upload_large_file(
         self,
@@ -211,23 +213,24 @@ class AdminClient(BaseClient):
             file_size=file_size,
         )
 
-        if not url_response.success:
+        if not url_response.success or url_response.data is None:
             return url_response
 
-        upload_id = url_response.data['uploadId']
-        upload_url = url_response.data['uploadUrl']
+        upload_id: str = url_response.data["uploadId"]
+        upload_url: str = url_response.data["uploadUrl"]
 
         # Step 2: Upload to S3
         s3_response = self.put_binary(upload_url, file_content)
         if s3_response.status_code != 200:
             from .base import ApiResponse as AR
+
             return AR(
                 success=False,
                 status_code=s3_response.status_code,
                 data=None,
-                error={'message': f'S3 upload failed: {s3_response.text}'},
+                error={"message": f"S3 upload failed: {s3_response.text}"},
                 meta=None,
-                raw={'error': s3_response.text},
+                raw={"error": s3_response.text},
             )
 
         # Step 3: Complete upload
@@ -264,18 +267,18 @@ class AdminClient(BaseClient):
         Returns:
             ApiResponse with updated version details
         """
-        payload = {}
+        payload: dict[str, Any] = {}
         if is_enabled is not None:
-            payload['isEnabled'] = is_enabled
+            payload["isEnabled"] = is_enabled
         if is_active is not None:
-            payload['isActive'] = is_active
+            payload["isActive"] = is_active
         if release_notes is not None:
-            payload['releaseNotes'] = release_notes
+            payload["releaseNotes"] = release_notes
         if minimum_client_version is not None:
-            payload['minimumClientVersion'] = minimum_client_version
+            payload["minimumClientVersion"] = minimum_client_version
 
         return self.patch(
-            f'/applications/{application_id}/versions/{version}',
+            f"/applications/{application_id}/versions/{version}",
             json=payload,
         )
 
@@ -298,16 +301,16 @@ class AdminClient(BaseClient):
         Returns:
             ApiResponse with updated customer details
         """
-        payload = {}
+        payload: dict[str, Any] = {}
         if name is not None:
-            payload['name'] = name
+            payload["name"] = name
         if is_active is not None:
-            payload['isActive'] = is_active
+            payload["isActive"] = is_active
         if notes is not None:
-            payload['notes'] = notes
+            payload["notes"] = notes
 
         return self.patch(
-            f'/management/customers/{customer_id}',
+            f"/management/customers/{customer_id}",
             json=payload,
         )
 
@@ -321,7 +324,7 @@ class AdminClient(BaseClient):
         Returns:
             ApiResponse with deletion status
         """
-        return self.delete(f'/management/applications/{application_id}')
+        return self.delete(f"/management/applications/{application_id}")
 
     def list_activity(
         self,
@@ -342,16 +345,16 @@ class AdminClient(BaseClient):
         Returns:
             ApiResponse with activity list
         """
-        params = {
-            'page': page,
-            'pageSize': page_size,
+        params: dict[str, Any] = {
+            "page": page,
+            "pageSize": page_size,
         }
         if activity_type:
-            params['type'] = activity_type
+            params["type"] = activity_type
         if application_id:
-            params['applicationId'] = application_id
+            params["applicationId"] = application_id
 
-        return self.get('/activity', params=params)
+        return self.get("/activity", params=params)
 
     def list_customers(
         self,
@@ -369,7 +372,7 @@ class AdminClient(BaseClient):
             ApiResponse with customers list
         """
         params = {
-            'page': page,
-            'pageSize': page_size,
+            "page": page,
+            "pageSize": page_size,
         }
-        return self.get('/management/customers', params=params)
+        return self.get("/management/customers", params=params)

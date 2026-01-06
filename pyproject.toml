@@ -1,0 +1,31 @@
+[project]
+name = "bindist"
+version = "1.0.0"
+description = "Python client library for the BinDist API"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.28.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.0.0",
+    "mypy>=1.0.0",
+    "types-requests>=2.28.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = "requests.*"
+ignore_missing_imports = true
