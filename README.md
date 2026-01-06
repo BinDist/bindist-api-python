@@ -103,7 +103,6 @@ admin = AdminClient("https://api.bindist.com", "admin-api-key")
 # Create a customer
 customer = admin.create_customer(
     name="Acme Corp",
-    tier="Premium",
     notes="Enterprise customer",
 )
 if customer.success:

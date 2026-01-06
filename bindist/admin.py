@@ -18,7 +18,6 @@ class AdminClient(BaseClient):
     def create_customer(
         self,
         name: str,
-        tier: str = "Basic",
         parent_customer_id: str = "admin",
         notes: str | None = None,
     ) -> ApiResponse:
@@ -27,16 +26,14 @@ class AdminClient(BaseClient):
 
         Args:
             name: Customer display name
-            tier: Tier level (Basic, Premium, Enterprise)
             parent_customer_id: Parent customer ID (default: admin)
             notes: Optional customer notes
 
         Returns:
             ApiResponse with customer details and API key
         """
-        payload = {
+        payload: dict[str, Any] = {
             "name": name,
-            "tier": tier,
         }
         if notes:
             payload["notes"] = notes
