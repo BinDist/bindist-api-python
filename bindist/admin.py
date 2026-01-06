@@ -248,7 +248,6 @@ class AdminClient(BaseClient):
         is_enabled: bool | None = None,
         is_active: bool | None = None,
         release_notes: str | None = None,
-        minimum_client_version: str | None = None,
     ) -> ApiResponse:
         """
         Update version metadata.
@@ -259,7 +258,6 @@ class AdminClient(BaseClient):
             is_enabled: Enable/disable for production
             is_active: Activate/deactivate version
             release_notes: Update release notes
-            minimum_client_version: Set minimum client version
 
         Returns:
             ApiResponse with updated version details
@@ -271,8 +269,6 @@ class AdminClient(BaseClient):
             payload["isActive"] = is_active
         if release_notes is not None:
             payload["releaseNotes"] = release_notes
-        if minimum_client_version is not None:
-            payload["minimumClientVersion"] = minimum_client_version
 
         return self.patch(
             f"/applications/{application_id}/versions/{version}",
