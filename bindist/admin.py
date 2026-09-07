@@ -333,14 +333,14 @@ class AdminClient(BaseClient):
             activity_type: Filter by type ('upload' or 'download')
             application_id: Filter by application
             page: Page number
-            page_size: Items per page
+            page_size: Items per page (sent as the "limit" query parameter)
 
         Returns:
             ApiResponse with activity list
         """
         params: dict[str, Any] = {
             "page": page,
-            "pageSize": page_size,
+            "limit": page_size,
         }
         if activity_type:
             params["type"] = activity_type
@@ -359,13 +359,13 @@ class AdminClient(BaseClient):
 
         Args:
             page: Page number
-            page_size: Items per page
+            page_size: Items per page (sent as the "limit" query parameter)
 
         Returns:
             ApiResponse with customers list
         """
         params = {
             "page": page,
-            "pageSize": page_size,
+            "limit": page_size,
         }
         return self.get("/management/customers", params=params)
