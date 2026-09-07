@@ -28,14 +28,14 @@ class CustomerClient(BaseClient):
             search: Search term to filter applications
             tags: List of tags to filter by
             page: Page number
-            page_size: Items per page
+            page_size: Items per page (sent as the "limit" query parameter)
 
         Returns:
             ApiResponse with applications list
         """
         params: dict[str, Any] = {
             "page": page,
-            "pageSize": page_size,
+            "limit": page_size,
         }
         if search:
             params["search"] = search
